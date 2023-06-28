@@ -1,6 +1,7 @@
 //é o arquivo onde o contexto será criado
-import React,{Children, Context, createContext, useState} from "react";
+import React,{Children, Context, createContext, useState, useEffect} from "react";
 import { IAuthProvider, IContext, IUser } from "./types";
+import { LoginRequest, getUserLocalStorage, setUserLocalStorage } from "./util";
 
 export const AuthContext = createContext<IContext>({} as IContext);
 
@@ -10,12 +11,29 @@ export const AuthProvider=({children}:IAuthProvider)=>{
     const [user, setUser]= useState<IUser | null>();
 
     async function authenticate(email:string, password:string) {
+        const response =await  LoginRequest (email, password);
+        const payload  = {token:response.token, email};
+        setUser(payload);
+        setUserLocalStorage(payload);
         
     }
 
     function logout(){
+        setUser(null);
+        setUserLocalStorage(null);
 
     }
+
+    // criamos useEffect para verificar o estado e obter as informações quando o componente for montado
+
+    useEffect(()=>{
+        const user = getUserLocalStorage();
+        if (user) {
+            setUser(user)
+            
+        }
+
+    },[])
     return(
         <AuthContext.Provider value={{...user, authenticate, logout}}>
             {children}
