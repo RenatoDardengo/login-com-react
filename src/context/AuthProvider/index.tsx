@@ -5,10 +5,18 @@ import { LoginRequest, getUserLocalStorage, setUserLocalStorage } from "./util";
 
 export const AuthContext = createContext<IContext>({} as IContext);
 
-//o AuthProvider é quem ficará por fora da aplicação verificando quem fez login ou logout
+//o AuthProvider é quem ficará por fora da aplicação verificando o estado de quem fez login ou logout
 export const AuthProvider=({children}:IAuthProvider)=>{
     //ela precisa ter um estado interno, pois é ele quem vai disponibilizar informações para a aplicação
     const [user, setUser]= useState<IUser | null>();
+    useEffect(()=>{
+        const user = getUserLocalStorage();
+        if (user) {
+            setUser(user)
+            
+        }
+    
+    },[]);
 
     async function authenticate(email:string, password:string) {
         const response =await  LoginRequest (email, password);
@@ -26,14 +34,6 @@ export const AuthProvider=({children}:IAuthProvider)=>{
 
     // criamos useEffect para verificar o estado e obter as informações quando o componente for montado
 
-    useEffect(()=>{
-        const user = getUserLocalStorage();
-        if (user) {
-            setUser(user)
-            
-        }
-
-    },[])
     return(
         <AuthContext.Provider value={{...user, authenticate, logout}}>
             {children}
